@@ -174,7 +174,7 @@ public class MainActivity extends ActionBarActivity
                 ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
         String input = readBugzilla();
-        Log.d(LOG_TAG, "input="+input.substring(0,100));
+        Log.d(LOG_TAG, "input="+input.substring(0,1000));
         try {
             JSONArray jsonArray=new JSONArray(input);
 
