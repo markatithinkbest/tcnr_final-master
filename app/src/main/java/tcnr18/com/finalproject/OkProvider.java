@@ -48,6 +48,10 @@ public class OkProvider extends ContentProvider {
     }
 
     private SQLiteDatabase sqlDB;
+    static final String CAT00 = "旅館業";
+
+
+
 
 
 //    * 標題 name

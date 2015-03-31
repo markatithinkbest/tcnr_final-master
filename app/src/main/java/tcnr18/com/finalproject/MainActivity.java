@@ -218,6 +218,15 @@ public class MainActivity extends ActionBarActivity
 
         // add to database
         if ( cVVector.size() > 0 ) {
+
+           int cnt=getContentResolver().delete(OkProvider.CONTENT_URI,
+                   OkProvider.COLUMN_CERTIFICATION_CATEGORY+ " = ?",
+                    new String[] {OkProvider.CAT00});
+            Log.d(LOG_TAG, "del cnt= "+ cnt);
+
+
+
+
             ContentValues[] cvArray = new ContentValues[cVVector.size()];
             cVVector.toArray(cvArray);
            getContentResolver().bulkInsert(OkProvider.CONTENT_URI, cvArray);
@@ -226,6 +235,7 @@ public class MainActivity extends ActionBarActivity
 //                    WeatherContract.WeatherEntry.COLUMN_DATE + " <= ?",
 //                    new String[] {Long.toString(dayTime.setJulianDay(julianStartDay-1))});
            // notifyWeather();
+      //      getContentResolver().
         }
 
 
