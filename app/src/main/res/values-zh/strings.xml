@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">臺北市-OK認證</string>
+
+    <string name="title_section1">旅館業</string>
+    <string name="title_section2">美容美髮業</string>
+    <string name="title_section3">關於我</string>
+    <string name="title_section4">Section 4</string>
+    <string name="title_section5">Section 5</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_example">Example action</string>
+
+    <string name="action_settings">Settings</string>
+</resources>
