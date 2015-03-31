@@ -1,19 +1,20 @@
 package tcnr18.com.finalproject;
 
 import android.app.Activity;
+import android.content.ContentValues;
+import android.os.Bundle;
 import android.os.StrictMode;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.support.v4.widget.DrawerLayout;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -32,6 +33,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Vector;
 
 
 public class MainActivity extends ActionBarActivity
@@ -168,33 +170,74 @@ public class MainActivity extends ActionBarActivity
 
 //    return super.onOptionsItemSelected(item);
 
-//}
-    void processJson(){
+    //}
+    void processJson() {
+
         StrictMode.ThreadPolicy policy = new StrictMode.
                 ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
-        String input = readBugzilla();
-        Log.d(LOG_TAG, "input="+input.substring(0,1000));
+
+        Vector<ContentValues> cVVector = null;
+
+
+        String strJson = readRawJson();
+
+
+
+        Log.d(LOG_TAG, "input=" + strJson.substring(0, 1000));
         try {
-            JSONArray jsonArray=new JSONArray(input);
+            JSONArray jsonArray = new JSONArray(strJson);
+            cVVector = new Vector<ContentValues>(jsonArray.length());
+//    * 標題 name
+//    * Ok認證類別 certification_category
+//    * 連絡電話 tel
+//    * 顯示用地址 display_addr
+//    * 系統辨識用地址 poi_addr
 
-            for (int i=0;i<jsonArray.length();i++) {
-                JSONObject json = jsonArray.getJSONObject(i);
-                String name=json.getString("name");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                String name = jsonObject.getString(OkProvider.COLUMN_NAME);
+                String certification_category = jsonObject.getString(OkProvider.COLUMN_CERTIFICATION_CATEGORY);
+                String tel = jsonObject.getString(OkProvider.COLUMN_TEL);
+                String display_addr = jsonObject.getString(OkProvider.COLUMN_DISPLAY_ADDR);
+                String poi_addr = jsonObject.getString(OkProvider.COLUMN_POI_ADDR);
 
-                Log.d(LOG_TAG, "json "+i+ " is " + name);
+                ContentValues weatherValues = new ContentValues();
+                weatherValues.put(OkProvider.COLUMN_NAME, name);
+                weatherValues.put(OkProvider.COLUMN_CERTIFICATION_CATEGORY, certification_category);
+                weatherValues.put(OkProvider.COLUMN_TEL, tel);
+                weatherValues.put(OkProvider.COLUMN_DISPLAY_ADDR, display_addr);
+                weatherValues.put(OkProvider.COLUMN_POI_ADDR, poi_addr);
+                cVVector.add(weatherValues);
+
+                Log.d(LOG_TAG, "json " + i + " is " + name);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+        // add to database
+        if ( cVVector.size() > 0 ) {
+            ContentValues[] cvArray = new ContentValues[cVVector.size()];
+            cVVector.toArray(cvArray);
+           getContentResolver().bulkInsert(OkProvider.CONTENT_URI, cvArray);
+// delete old data so we don't build up an endless history
+//           getContentResolver().delete(OkProvider.CONTENT_URI,
+//                    WeatherContract.WeatherEntry.COLUMN_DATE + " <= ?",
+//                    new String[] {Long.toString(dayTime.setJulianDay(julianStartDay-1))});
+           // notifyWeather();
+        }
+
+
     }
-    public String readBugzilla() {
+
+    public String readRawJson() {
         StringBuilder builder = new StringBuilder();
         HttpClient client = new DefaultHttpClient();
 //        HttpGet httpGet = new HttpGet("https://bugzilla.mozilla.org/rest/bug?assigned_to=lhenry@mozilla.com");
-        String str="http://data.taipei.gov.tw/opendata/apply/json/QTdBNEQ5NkQtQkM3MS00QUI2LUJENTctODI0QTM5MkIwMUZE";
+        String str = "http://data.taipei.gov.tw/opendata/apply/json/QTdBNEQ5NkQtQkM3MS00QUI2LUJENTctODI0QTM5MkIwMUZE";
         HttpGet httpGet = new HttpGet(str);
-        Log.d(LOG_TAG, "new HttpGet(str) => "+str);
+        Log.d(LOG_TAG, "new HttpGet(str) => " + str);
         try {
             HttpResponse response = client.execute(httpGet);
             StatusLine statusLine = response.getStatusLine();

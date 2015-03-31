@@ -16,6 +16,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <provider
+            android:name=".OkProvider"
+            android:authorities="tcnr18.com.finalproject.OkProvider"
+            android:exported="false"
+            android:syncable="true" />
+
     </application>
 
 </manifest>
