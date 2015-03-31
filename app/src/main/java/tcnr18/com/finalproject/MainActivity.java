@@ -2,6 +2,8 @@ package tcnr18.com.finalproject;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.Fragment;
@@ -16,6 +18,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import org.apache.http.HttpEntity;
@@ -202,12 +206,19 @@ public class MainActivity extends ActionBarActivity
                 String display_addr = jsonObject.getString(OkProvider.COLUMN_DISPLAY_ADDR);
                 String poi_addr = jsonObject.getString(OkProvider.COLUMN_POI_ADDR);
 
+                //
+                String addr_dist = display_addr.substring(0,6);
+
                 ContentValues weatherValues = new ContentValues();
                 weatherValues.put(OkProvider.COLUMN_NAME, name);
                 weatherValues.put(OkProvider.COLUMN_CERTIFICATION_CATEGORY, certification_category);
                 weatherValues.put(OkProvider.COLUMN_TEL, tel);
                 weatherValues.put(OkProvider.COLUMN_DISPLAY_ADDR, display_addr);
                 weatherValues.put(OkProvider.COLUMN_POI_ADDR, poi_addr);
+
+                //
+                weatherValues.put(OkProvider.COLUMN_ADDR_DIST, addr_dist);
+
                 cVVector.add(weatherValues);
 
                 Log.d(LOG_TAG, "json " + i + " is " + name);
@@ -219,17 +230,20 @@ public class MainActivity extends ActionBarActivity
         // add to database
         if ( cVVector.size() > 0 ) {
 
-           int cnt=getContentResolver().delete(OkProvider.CONTENT_URI,
+           int delCnt=getContentResolver().delete(OkProvider.CONTENT_URI,
                    OkProvider.COLUMN_CERTIFICATION_CATEGORY+ " = ?",
                     new String[] {OkProvider.CAT00});
-            Log.d(LOG_TAG, "del cnt= "+ cnt);
+            Log.d(LOG_TAG, "del cnt= "+ delCnt);
 
 
 
 
             ContentValues[] cvArray = new ContentValues[cVVector.size()];
             cVVector.toArray(cvArray);
-           getContentResolver().bulkInsert(OkProvider.CONTENT_URI, cvArray);
+           int bulkCnt=getContentResolver().bulkInsert(OkProvider.CONTENT_URI, cvArray);
+            Log.d(LOG_TAG, "bulk cnt= "+ bulkCnt);
+
+
 // delete old data so we don't build up an endless history
 //           getContentResolver().delete(OkProvider.CONTENT_URI,
 //                    WeatherContract.WeatherEntry.COLUMN_DATE + " <= ?",
@@ -340,12 +354,53 @@ public class MainActivity extends ActionBarActivity
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_act0, container, false);
-            btn0 = (ImageButton) rootView.findViewById(R.id.Vendor0);
-            btn0.setOnClickListener(this);
-            btn1 = (ImageButton) rootView.findViewById(R.id.Vendor1);
-            btn1.setOnClickListener(this);
-            return rootView;
+//            btn0 = (ImageButton) rootView.findViewById(R.id.Vendor0);
+//            btn0.setOnClickListener(this);
+//            btn1 = (ImageButton) rootView.findViewById(R.id.Vendor1);
+//            btn1.setOnClickListener(this);
+            ListView listView=(ListView)rootView.findViewById(R.id.listView);
+
+
+
+           Cursor mGrpMemberCursor = getGrpMembers("xxx");
+            getActivity().startManagingCursor(mGrpMemberCursor);
+            SimpleCursorAdapter adapter = new SimpleCursorAdapter(getActivity(),
+                    android.R.layout.simple_list_item_2, mGrpMemberCursor, new String[]{OkProvider.COLUMN_NAME, OkProvider.COLUMN_ADDR_DIST }, new int[]{
+                    android.R.id.text1, android.R.id.text2});
+
+            listView.setAdapter(adapter);
+
+
+
+
+
+        return rootView;
         }
+
+
+    /**
+     * @param grpId
+     * @return
+     */
+    private Cursor getGrpMembers(String grpId) {
+        Uri uri = OkProvider.CONTENT_URI;
+        String[] projection = new String[]{OkProvider.COLUMN_ID,
+                OkProvider.COLUMN_NAME, OkProvider.COLUMN_ADDR_DIST};
+        //
+        String selection = null;
+
+        String[] selectionArgs = null;
+        String sortOrder = OkProvider.COLUMN_ADDR_DIST;
+
+        return getActivity().managedQuery(uri, projection, selection, selectionArgs,
+                sortOrder);
+    }
+//        private Cursor getGrpCnt(String grpId) {
+//            Uri uri = OkProvider.CONTENT_URI;
+//
+//            return getActivity().getContentResolver(uri, projection, selection, selectionArgs,
+//                    sortOrder);
+//        }
 
         public void onClick(View v) {
             Log.d("debug", "v=" + v.toString());

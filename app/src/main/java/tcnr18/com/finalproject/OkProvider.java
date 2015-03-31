@@ -50,7 +50,7 @@ public class OkProvider extends ContentProvider {
     private SQLiteDatabase sqlDB;
     static final String CAT00 = "旅館業";
 
-
+    DatabaseHelper dbHelper=null;
 
 
 
@@ -67,10 +67,13 @@ public class OkProvider extends ContentProvider {
     static final String COLUMN_DISPLAY_ADDR = "display_addr";
     static final String COLUMN_POI_ADDR = "poi_addr";
 
+    //
+    static final String COLUMN_ADDR_DIST = "addr_dist";
+
 
     static private final String DATABASE_NAME = "taipei.db"; // YOUR DESIRED DATABASE
     static private final String TABLE_NAME = "ok"; // YOUR DESIRED TABLE
-    static private final int DATABASE_VERSION = 2; // ### need to increase when change
+    static private final int DATABASE_VERSION = 4; // ### need to increase when change
 
     static private final String COL0 = COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT";
     static private final String COL1 = COLUMN_NAME + " TEXT NOT NULL ";
@@ -79,6 +82,9 @@ public class OkProvider extends ContentProvider {
     static private final String COL4 = COLUMN_DISPLAY_ADDR + " TEXT NOT NULL ";
     static private final String COL5 = COLUMN_POI_ADDR + " TEXT NOT NULL ";
 
+    //
+    static private final String COL6 = COLUMN_ADDR_DIST + " TEXT NOT NULL ";
+
     // table structure
     static private final String CREATE_DB_TABLE = " CREATE TABLE " + TABLE_NAME + " ("
             + COL0 + ","
@@ -86,17 +92,24 @@ public class OkProvider extends ContentProvider {
             + COL2 + ","
             + COL3 + ","
             + COL4 + ","
-            + COL5 + " "
+            + COL5 + ","
+            + COL6 + " "
             + ");";
 
     @Override
     public boolean onCreate() {
-        DatabaseHelper dbHelper = new DatabaseHelper(getContext());
+         dbHelper = new DatabaseHelper(getContext());
         sqlDB = dbHelper.getWritableDatabase();
         if (sqlDB != null) {
             return true;
         }
         return false;
+    }
+
+
+    public Cursor rawQuery(String sql){
+        return dbHelper.getReadableDatabase().rawQuery(sql, null);
+
     }
 
     // Returns a cursor that provides read and write access to the results of
